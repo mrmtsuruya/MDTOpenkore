@@ -1170,8 +1170,14 @@ sub account_server_intro {
 	my ($self, $args) = @_;
 	# This packet (0x4753) is sent by the server before login
 	# It appears to be a security/challenge packet
-	# For now, we just acknowledge it and continue with the login process
+	# We need to send back the same data as acknowledgment
 	debug "Received account server intro packet (0x4753)\n", "connection";
+	
+	# Send the acknowledgment packet back to the server
+	# The server sends 36 bytes (v len + a32 data), we echo it back
+	my $msg = pack("v a32", 0x4753, $args->{data});
+	$net->clientSend($msg);
+	debug "Sent account server intro response (0x4753)\n", "connection";
 }
 
 sub account_server_info {
