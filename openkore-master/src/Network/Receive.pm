@@ -1169,17 +1169,14 @@ sub reconstruct_account_server_info {
 sub account_server_intro {
 	my ($self, $args) = @_;
 	# This packet (0x4753) is sent by the server before login
-	# It appears to be a security/challenge packet
-	# We need to send back the same data as acknowledgment
+	# It appears to be a security/challenge/announcement packet
+	# Based on testing, server doesn't expect a response - just acknowledge and wait
 	debug "Received account server intro packet (0x4753)\n", "connection";
-	debug sprintf("Challenge data: %s\n", unpack("H*", $args->{data})), "connection";
+	debug sprintf("Server intro data: %s\n", unpack("H*", $args->{data})), "connection";
 	
-	# Send the acknowledgment packet back to the server
-	# Packet structure: packet_id (v) + len (v) + data (a32)
-	# Total: 2 + 2 + 32 = 36 bytes
-	my $msg = pack("v v a32", 0x4753, 36, $args->{data});
-	$net->clientSend($msg);
-	debug "Sent account server intro response (0x4753)\n", "connection";
+	# Do NOT send a response - the server will send the actual login response next
+	# The timeout was likely caused by sending an unexpected packet back
+	debug "Waiting for server login response...\n", "connection";
 }
 
 sub account_server_info {
