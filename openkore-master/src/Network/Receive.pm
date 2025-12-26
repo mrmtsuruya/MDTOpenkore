@@ -1166,6 +1166,14 @@ sub reconstruct_account_server_info {
 	$args->{serverInfo} = pack '(a' . $serverInfo->{len} .')*', map { pack($serverInfo->{types}, @{$_}{@{$serverInfo->{keys}}}) } @{$args->{servers}};
 }
 
+sub account_server_intro {
+	my ($self, $args) = @_;
+	# This packet (0x4753) is sent by the server before login
+	# It appears to be a security/challenge packet
+	# For now, we just acknowledge it and continue with the login process
+	debug "Received account server intro packet (0x4753)\n", "connection";
+}
+
 sub account_server_info {
 	my ($self, $args) = @_;
 	$net->setState(2);
