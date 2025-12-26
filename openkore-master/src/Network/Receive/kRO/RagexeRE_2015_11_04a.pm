@@ -19,10 +19,18 @@ use base qw(Network::Receive::kRO::RagexeRE_2015_10_29a);
 
 sub new {
 	my ($class) = @_;
-	return $class->SUPER::new(@_);
+	my $self = $class->SUPER::new(@_);
+	
+	my %packets = (
+		'4753' => ['account_server_intro', 'v a32', [qw(len data)]],
+	);
+	
+	foreach my $switch (keys %packets) {
+		$self->{packet_list}{$switch} = $packets{$switch};
+	}
+	
+	return $self;
 }
-
-
 
 1;
 

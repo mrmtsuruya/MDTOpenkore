@@ -362,4 +362,4 @@ serverEncoding Western
 charBlockSize 144
 private 1
 addTableFolders iRO
-recvpackets recvpackets.txt
+recvpackets arkangel.txt

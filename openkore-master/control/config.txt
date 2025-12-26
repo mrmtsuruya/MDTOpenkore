@@ -1,1 +1,107 @@
-XKore 3
+# Please Read the Users Manual
+# The Manual is located at https://openkore.com/wiki/Manual
+
+######## Debug settings ########
+# Enable debugging to see detailed packet information
+debug 2
+debugPacket_received 1
+debugPacket_sent 1
+debugPacket_unparsed 1
+debugPacket_include 4753
+verbose 1
+
+######## Login options and server-specific options ########
+
+# Gepard Shield settings (for servers using Gepard anti-cheat)
+# Place your gepard.dll in the OpenKore root directory
+# The DLL should export a function: gepard_process_challenge(unsigned char* challenge_data, int length, unsigned char* response_buffer)
+gepard_enabled 0
+gepard_dll gepard.dll
+
+master Arkangel RO
+server
+username rakshot26
+password Akemi_2689
+loginPinCode 0926
+char 0
+otpSeed
+
+# Poseidon Settings: https://openkore.com/wiki/Poseidon
+# They must be the same as Query Server config in Poseidon.txt
+poseidonServer 127.0.0.1
+poseidonPort 24390
+poseidonTimeout 5
+
+bindIp
+forceMapIP
+
+# 1 = hook into RO client, 2 = Act as stand-alone proxy, proxy = act as true proxy
+# https://openkore.com/wiki/XKore
+XKore 0
+XKore_port 2350
+XKore_dll NetRedirect.dll
+XKore_injectDLL 1
+XKore_autoAttachIfOneExe 1
+XKore_silent 0
+XKore_bypassBotDetection 0
+XKore_exeName Ragexe.exe
+
+# XKore 2 / Proxy configuration
+XKore_listenIp 127.0.0.1
+XKore_listenPort 6900
+XKore_publicIp 127.0.0.1
+XKore_ID
+
+# It is not advised to set secureAdminPassword if you're using Xkore 2
+secureAdminPassword 0
+adminPassword drospeec
+callSign
+commandPrefix ;
+callSignGM 0
+inGameAuth 0
+
+macAddress
+
+pauseCharLogin 2
+pauseCharServer 0
+pauseMapServer 0
+ignoreInvalidLogin 0
+
+# Opening cash shop when connected to map server (recv/ST0)
+whenInGame_requestCashPoints 0
+
+message_length_max 80
+
+######## Main configuration ########
+
+alias_heal sp 28
+
+allowedMaps
+allowedMaps_reaction 1
+
+attackAuto 2
+attackAuto_party 1
+attackAuto_onlyWhenSafe 0
+attackAuto_followTarget 1
+attackAuto_inLockOnly 1
+attackAuto_notInTown 1
+attackAuto_notWhile_storageAuto 1
+attackAuto_notWhile_buyAuto 1
+attackAuto_notWhile_sellAuto 1
+attackAuto_considerDamagedAggressive 0
+attackDistance 1
+attackDistanceAuto 1
+attackMaxDistance 1
+attackMaxRouteTime 4
+attackMinPlayerDistance 2
+attackMinPortalDistance 4
+attackUseWeapon 1
+attackNoGiveup 0
+attackCanSnipe 0
+attackCheckLOS 1
+attackRouteMaxPathDistance 20
+attackLooters 0
+attackLooters_dist 1
+attackChangeTarget 1
+aggressiveAntiKS 0
+macro_orphans terminate
