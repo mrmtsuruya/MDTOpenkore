@@ -1,1 +1,3 @@
-XKore 3
+XKore 0
+master Arkangel RO
+server 0
