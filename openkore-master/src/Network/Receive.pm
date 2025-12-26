@@ -1169,14 +1169,96 @@ sub reconstruct_account_server_info {
 sub account_server_intro {
 	my ($self, $args) = @_;
 	# This packet (0x4753) is sent by the server before login
-	# It appears to be a security/challenge/announcement packet
-	# Based on testing, server doesn't expect a response - just acknowledge and wait
+	# For Gepard Shield protected servers, this is a challenge packet
 	debug "Received account server intro packet (0x4753)\n", "connection";
 	debug sprintf("Server intro data: %s\n", unpack("H*", $args->{data})), "connection";
 	
-	# Do NOT send a response - the server will send the actual login response next
-	# The timeout was likely caused by sending an unexpected packet back
-	debug "Waiting for server login response...\n", "connection";
+	# Check if Gepard DLL support is enabled
+	if ($config{gepard_enabled}) {
+		debug "Gepard Shield enabled, attempting to process challenge...\n", "connection";
+		
+		# Try to load and call the Gepard DLL
+		my $response = $self->_process_gepard_challenge($args->{data});
+		
+		if ($response) {
+			# Send the Gepard response packet
+			my $msg = pack("v", 0x4753) . $response;
+			$net->clientSend($msg);
+			debug "Sent Gepard Shield response (0x4753)\n", "connection";
+		} else {
+			warning "Failed to process Gepard challenge - connection may timeout\n";
+		}
+	} else {
+		# No Gepard support - just wait for server response
+		debug "Waiting for server login response...\n", "connection";
+	}
+}
+
+# Helper function to process Gepard Shield challenge using external DLL
+# This function attempts to load the user-provided Gepard DLL and call its challenge processing function
+sub _process_gepard_challenge {
+	my ($self, $challenge_data) = @_;
+	
+	# Try to use Win32::API to call the DLL (Windows only)
+	if ($^O eq 'MSWin32') {
+		eval {
+			require Win32::API;
+			
+			my $dll_name = $config{gepard_dll} || 'gepard.dll';
+			my $dll_path = $dll_name;
+			
+			# Try to find the DLL in common locations
+			foreach my $path ("$dll_name", "./$dll_name", "./src/$dll_name") {
+				if (-f $path) {
+					$dll_path = $path;
+					last;
+				}
+			}
+			
+			if (!-f $dll_path) {
+				error "Gepard DLL not found: $dll_path\n";
+				return undef;
+			}
+			
+			debug "Loading Gepard DLL from: $dll_path\n", "connection";
+			
+			# Try to call the gepard_process_challenge function
+			# Expected signature: int gepard_process_challenge(unsigned char* challenge, int length, unsigned char* response)
+			my $gepard_func = Win32::API->new($dll_path, 'int gepard_process_challenge(LPBYTE, int, LPBYTE)');
+			
+			if (!$gepard_func) {
+				error "Failed to load gepard_process_challenge function from DLL\n";
+				return undef;
+			}
+			
+			# Prepare response buffer (should match the expected response size)
+			my $response_buffer = "\x00" x 64;  # 64 bytes buffer for response
+			my $challenge_len = length($challenge_data);
+			
+			# Call the DLL function
+			my $result = $gepard_func->Call($challenge_data, $challenge_len, $response_buffer);
+			
+			if ($result > 0) {
+				# Trim response to actual length returned
+				my $response = substr($response_buffer, 0, $result);
+				debug sprintf("Gepard DLL returned %d bytes response\n", $result), "connection";
+				return $response;
+			} else {
+				error "Gepard DLL returned error code: $result\n";
+				return undef;
+			}
+		};
+		
+		if ($@) {
+			error "Error calling Gepard DLL: $@\n";
+			return undef;
+		}
+	} else {
+		warning "Gepard Shield DLL support is only available on Windows\n";
+		return undef;
+	}
+	
+	return undef;
 }
 
 sub account_server_info {

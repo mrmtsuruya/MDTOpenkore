@@ -12,6 +12,12 @@ verbose 1
 
 ######## Login options and server-specific options ########
 
+# Gepard Shield settings (for servers using Gepard anti-cheat)
+# Place your gepard.dll in the OpenKore root directory
+# The DLL should export a function: gepard_process_challenge(unsigned char* challenge_data, int length, unsigned char* response_buffer)
+gepard_enabled 0
+gepard_dll gepard.dll
+
 master Arkangel RO
 server
 username rakshot26
