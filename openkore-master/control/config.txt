@@ -1,6 +1,15 @@
 # Please Read the Users Manual
 # The Manual is located at https://openkore.com/wiki/Manual
 
+######## Debug settings ########
+# Enable debugging to see detailed packet information
+debug 2
+debugPacket_received 1
+debugPacket_sent 1
+debugPacket_unparsed 1
+debugPacket_include 4753
+verbose 1
+
 ######## Login options and server-specific options ########
 
 master Arkangel RO

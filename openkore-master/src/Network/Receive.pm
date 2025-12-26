@@ -1172,10 +1172,12 @@ sub account_server_intro {
 	# It appears to be a security/challenge packet
 	# We need to send back the same data as acknowledgment
 	debug "Received account server intro packet (0x4753)\n", "connection";
+	debug sprintf("Challenge data: %s\n", unpack("H*", $args->{data})), "connection";
 	
 	# Send the acknowledgment packet back to the server
-	# The server sends 36 bytes (v len + a32 data), we echo it back
-	my $msg = pack("v a32", 0x4753, $args->{data});
+	# Packet structure: packet_id (v) + len (v) + data (a32)
+	# Total: 2 + 2 + 32 = 36 bytes
+	my $msg = pack("v v a32", 0x4753, 36, $args->{data});
 	$net->clientSend($msg);
 	debug "Sent account server intro response (0x4753)\n", "connection";
 }
