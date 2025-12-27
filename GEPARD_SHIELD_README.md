@@ -32,7 +32,8 @@ Gepard Shield is an anti-cheat protection system used by some Ragnarok Online pr
 | **Plugin Framework** | ✅ Complete | Full plugin structure with hooks |
 | **Configuration** | ✅ Complete | Config file support and options |
 | **Debug Logging** | ✅ Complete | Detailed hex dumps and logging |
-| **CBS-AES Encryption** | ✅ Complete | Full CBS-AES implementation |
+| **CBC-AES Encryption** | ✅ Complete | Full CBC-AES with zero padding |
+| **Plugin Integration** | ✅ Complete | GepardCrypto fully integrated |
 | **Protocol Processing** | ⚠️ Requires Keys | Implementation ready, needs server-specific keys |
 
 ---
@@ -83,15 +84,16 @@ Gepard Shield is an anti-cheat protection system used by some Ragnarok Online pr
 
 ### What Happens Now?
 
-With the current framework:
+With the current implementation:
 - ✅ **Will NOT timeout** with "Unknown switch: 4753"
 - ✅ **Will receive** and log the challenge packet
 - ✅ **Will display** hex dump of challenge data
-- ✅ **CBS-AES encryption** is fully implemented
+- ✅ **CBC-AES encryption** is fully implemented and integrated
+- ✅ **GepardShield plugin** can decrypt/encrypt using GepardCrypto
 - ⚠️ **Will NOT authenticate** successfully (requires server-specific encryption keys)
 - ⚠️ **Connection will timeout/fail** at authentication stage (until proper keys are configured)
 
-**Note:** The encryption implementation is complete, but you need to obtain the correct encryption keys from your server operator or through authorized reverse engineering.
+**Note:** The encryption implementation is complete and integrated. You need to obtain the correct encryption keys from your server operator or through authorized reverse engineering. See `QUICKSTART.md` for detailed setup instructions.
 
 ---
 
