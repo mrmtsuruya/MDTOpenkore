@@ -1,4 +1,164 @@
+###########################################################################
+# OpenKore Configuration for Arkangel RO
+###########################################################################
+
+# Server Selection
+server Arkangel RO
+
+# Login Credentials
+# Note: Fill in your actual credentials here
+username YOUR_USERNAME
+password YOUR_PASSWORD
+
+# Character Selection
+# Specify character name or slot number (0, 1, 2)
+char YOUR_CHARACTER_NAME
+
+# XKore Mode (required for Arkangel RO)
+# Mode 2: Inject into running RO client
 XKore 2
-char
-server
+
+###########################################################################
+# Gepard Shield Configuration
+###########################################################################
+
+# Enable Gepard Shield authentication (required for Arkangel RO)
+gepard_enabled 1
+
+# Enable debug logging to see challenge/response data
+gepard_debug 1
+
+# Gepard encryption key (REQUIRED - must be obtained from server)
+# This is a placeholder - replace with actual key
+#gepard_key 0123456789ABCDEF0123456789ABCDEF
+
+###########################################################################
+# General Settings
+###########################################################################
+
+# Macro settings
 macro_orphans terminate
+
+# Logging
+logChat 1
+logPrivateChat 1
+logPartyChat 1
+logGuildChat 1
+logSystemChat 1
+
+# Verbose mode for debugging
+verbose 1
+
+###########################################################################
+# Advanced Settings
+###########################################################################
+
+# Attack settings
+attackAuto 2
+attackAuto_party 1
+attackAuto_onlyWhenSafe 0
+attackDistance 1.5
+attackMaxDistance 2.5
+attackMaxRouteTime 5
+
+# Route settings
+route_randomWalk 1
+route_randomWalk_inTown 0
+route_randomWalk_maxRouteTime 75
+
+# Storage settings
+storageAuto 0
+storageAuto_npc
+storageAuto_distance 5
+storageAuto_npc_type 1
+storageAuto_npc_steps c r0 n
+relogAfterStorage 0
+
+# Sit settings
+sitAuto_hp_lower 50
+sitAuto_hp_upper 100
+sitAuto_sp_lower 0
+sitAuto_sp_upper 0
+sitAuto_follow 1
+sitAuto_over_50 1
+sitTimeout 5
+
+# Item settings
+itemsTakeAuto 2
+itemsGatherAuto 2
+itemsMaxWeight 89
+itemsMaxWeight_sellOrStore 48
+itemsMaxNum_sellOrStore 99
+
+# Teleport settings
+teleportAuto_hp 10
+teleportAuto_sp 0
+teleportAuto_idle 0
+teleportAuto_portal 0
+teleportAuto_search 0
+teleportAuto_minAggressives 0
+teleportAuto_minAggressivesInLock 0
+teleportAuto_onlyWhenSafe 0
+teleportAuto_maxDmg 500
+teleportAuto_maxDmgInLock 0
+teleportAuto_deadly 1
+teleportAuto_useSkill 3
+teleportAuto_useChatCommand
+teleportAuto_allPlayers 0
+teleportAuto_atkCount 0
+teleportAuto_atkMiss 10
+teleportAuto_unstuck 0
+teleportAuto_lostTarget 0
+teleportAuto_dropTarget 0
+teleportAuto_dropTargetKS 0
+
+# Deal settings
+dealAuto 1
+dealAuto_names
+partyAuto 1
+partyAutoShare 0
+guildAutoDeny 1
+
+# Avoid settings
+avoidGM_near 0
+avoidGM_near_inTown 0
+avoidList_inLockOnly 0
+avoidList_reconnect 1800
+
+# Disconnect settings
+dcOnDeath 0
+dcOnDualLogin 0
+dcOnDisconnect 0
+dcOnEmptyArrow 0
+dcOnMute 0
+dcOnZeny 0
+dcOnStorageFull 0
+dcOnPlayer 0
+
+# Follow settings
+follow 0
+followTarget
+followEmotion 1
+followEmotion_distance 4
+followFaceDirection 0
+followDistanceMax 6
+followDistanceMin 3
+followLostStep 12
+followSitAuto 0
+followBot 0
+
+###########################################################################
+# Notes
+###########################################################################
+# 
+# This configuration is set up for Arkangel RO server with Gepard Shield
+# 
+# IMPORTANT: You must obtain the correct Gepard encryption key for this
+# server. Without the correct key, authentication will fail.
+#
+# To get the key:
+# 1. Contact server administrator (if you have permission)
+# 2. Reverse engineer the official client (requires authorization)
+# 3. Check community resources (if publicly available)
+#
+###########################################################################

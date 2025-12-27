@@ -41,6 +41,7 @@ my $crypto_initialized = 0;
 my $encryption_key;
 my $encryption_iv;
 my $rijndael;
+my $pure_perl_cipher;  # Cache for pure Perl AES cipher
 
 ##############################################################################
 # Initialization
@@ -52,6 +53,9 @@ sub gepard_init_crypto {
 	# Initialize encryption system
 	$encryption_key = $args{key} if $args{key};
 	$encryption_iv = $args{iv} if $args{iv};
+
+	# Reset the pure Perl cipher cache
+	$pure_perl_cipher = undef;
 
 	# Try to create Rijndael instance if available
 	if ($use_rijndael) {
@@ -79,6 +83,17 @@ sub gepard_init_crypto {
 			warn "GepardCrypto: Falling back to pure Perl AES (slower)\n";
 			$use_rijndael = 0;
 			$rijndael = undef;
+		}
+	}
+	
+	# If not using Rijndael and we have a key, initialize pure Perl cipher
+	if (!$use_rijndael && $encryption_key) {
+		eval {
+			_init_pure_perl_cipher($encryption_key);
+		};
+		if ($@) {
+			warn "GepardCrypto: Failed to initialize pure Perl AES: $@\n";
+			return 0;
 		}
 	}
 
@@ -192,147 +207,86 @@ sub gepard_encrypt_response {
 
 sub _cbs_aes_decrypt {
 	my ($ciphertext, $key, $iv) = @_;
-
+	
+	# Try to use direct CBC mode if available
+	my $result = eval {
+		_cbc_decrypt_direct($ciphertext, $key, $iv);
+	};
+	
+	unless ($@) {
+		return $result;
+	}
+	
+	# Fallback to manual implementation
 	my $block_size = 16;  # AES block size
 	my $data_len = length($ciphertext);
 	
-	# Handle empty or single block specially
+	# Handle empty data
 	if ($data_len == 0) {
 		return '';
 	}
 	
-	if ($data_len <= $block_size) {
-		# Single block - use CBC mode with IV
-		my $iv_to_use = $iv || ("\0" x $block_size);
-		my $decrypted = _aes_decrypt_block($ciphertext, $key);
-		return _xor_blocks($decrypted, $iv_to_use);
-	}
-
 	# Split into blocks
 	my @blocks = _split_into_blocks($ciphertext, $block_size);
-	my $num_blocks = scalar @blocks;
-	my $last_block_size = length($blocks[-1]);
 	
-	# Initialize IV for CBC
+	# CBC decryption
 	my $prev_cipher = $iv || ("\0" x $block_size);
-	my $result = '';
+	my $result_manual = '';
 	
-	# If last block is complete, use standard CBC
-	if ($last_block_size == $block_size) {
-		for my $i (0 .. $#blocks) {
-			my $decrypted_block = _aes_decrypt_block($blocks[$i], $key);
-			my $plaintext_block = _xor_blocks($decrypted_block, $prev_cipher);
-			$result .= $plaintext_block;
-			$prev_cipher = $blocks[$i];
-		}
-		return $result;
-	}
-	
-	# CBS mode for partial last block
-	# Process all blocks except last two
-	for my $i (0 .. $num_blocks - 3) {
+	for my $i (0 .. $#blocks) {
 		my $decrypted_block = _aes_decrypt_block($blocks[$i], $key);
 		my $plaintext_block = _xor_blocks($decrypted_block, $prev_cipher);
-		$result .= $plaintext_block;
+		$result_manual .= $plaintext_block;
 		$prev_cipher = $blocks[$i];
 	}
 	
-	# Handle last two blocks with CBS
-	my $second_last = $blocks[-2];
-	my $last = $blocks[-1];
+	# Remove trailing zeros
+	$result_manual =~ s/\0+$//;
 	
-	# Decrypt second-to-last block
-	my $decrypted_second_last = _aes_decrypt_block($second_last, $key);
-	
-	# Create a full block by padding the last block with bytes from decrypted second-to-last
-	my $padded_last = $last . substr($decrypted_second_last, $last_block_size);
-	
-	# Decrypt the padded last block
-	my $decrypted_last = _aes_decrypt_block($padded_last, $key);
-	
-	# XOR with previous ciphertext (CBC mode)
-	my $plaintext_last = _xor_blocks($decrypted_last, $prev_cipher);
-	
-	# In CBS mode, the plaintext for second-to-last block is obtained by XORing
-	# the decrypted second-to-last block with the original last ciphertext block (padded).
-	# This is the "stealing" part - we use ciphertext from the last block to complete
-	# the decryption of the second-to-last block.
-	my $plaintext_second_last = _xor_blocks($decrypted_second_last, $last . ("\0" x ($block_size - $last_block_size)));
-	
-	# Append results (only take the actual length of last block)
-	$result .= substr($plaintext_second_last, 0, $block_size);
-	$result .= substr($plaintext_last, 0, $last_block_size);
-	
-	return $result;
+	return $result_manual;
 }
 
 sub _cbs_aes_encrypt {
 	my ($plaintext, $key, $iv) = @_;
-
+	
+	# Try to use direct CBC mode if available
+	my $result = eval {
+		_cbc_encrypt_direct($plaintext, $key, $iv);
+	};
+	
+	unless ($@) {
+		return $result;
+	}
+	
+	# Fallback to manual implementation
 	my $block_size = 16;  # AES block size
 	my $data_len = length($plaintext);
 	
-	# Handle empty or single block specially
+	# Handle empty data
 	if ($data_len == 0) {
 		return '';
 	}
 	
-	if ($data_len <= $block_size) {
-		# Single block - use CBC mode with IV
-		my $iv_to_use = $iv || ("\0" x $block_size);
-		my $xored = _xor_blocks($plaintext, $iv_to_use);
-		return _aes_encrypt_block($xored, $key);
-	}
-
+	# Pad to block size
+	my $padding_needed = ($block_size - ($data_len % $block_size)) % $block_size;
+	my $padded = $plaintext . ("\0" x $padding_needed) if $padding_needed;
+	$padded = $plaintext if !$padding_needed;
+	
 	# Split into blocks
-	my @blocks = _split_into_blocks($plaintext, $block_size);
-	my $num_blocks = scalar @blocks;
-	my $last_block_size = length($blocks[-1]);
+	my @blocks = _split_into_blocks($padded, $block_size);
 	
-	# Initialize IV for CBC
+	# CBC encryption
 	my $prev_cipher = $iv || ("\0" x $block_size);
-	my $result = '';
+	my $result_manual = '';
 	
-	# If last block is complete, use standard CBC
-	if ($last_block_size == $block_size) {
-		for my $i (0 .. $#blocks) {
-			my $xored = _xor_blocks($blocks[$i], $prev_cipher);
-			my $encrypted_block = _aes_encrypt_block($xored, $key);
-			$result .= $encrypted_block;
-			$prev_cipher = $encrypted_block;
-		}
-		return $result;
-	}
-	
-	# CBS mode for partial last block
-	# Process all blocks except last two
-	for my $i (0 .. $num_blocks - 3) {
+	for my $i (0 .. $#blocks) {
 		my $xored = _xor_blocks($blocks[$i], $prev_cipher);
 		my $encrypted_block = _aes_encrypt_block($xored, $key);
-		$result .= $encrypted_block;
+		$result_manual .= $encrypted_block;
 		$prev_cipher = $encrypted_block;
 	}
 	
-	# Handle last two blocks with CBS
-	my $second_last = $blocks[-2];
-	my $last = $blocks[-1];
-	
-	# Pad the last block with zeros to make it full size
-	my $padded_last = $last . ("\0" x ($block_size - $last_block_size));
-	
-	# XOR and encrypt second-to-last block
-	my $xored_second_last = _xor_blocks($second_last, $prev_cipher);
-	my $encrypted_second_last = _aes_encrypt_block($xored_second_last, $key);
-	
-	# XOR last block (padded) with encrypted second-to-last
-	my $xored_last = _xor_blocks($padded_last, $encrypted_second_last);
-	my $encrypted_last = _aes_encrypt_block($xored_last, $key);
-	
-	# For CBS, we swap the last two blocks and truncate the second-to-last
-	$result .= $encrypted_last;
-	$result .= substr($encrypted_second_last, 0, $last_block_size);
-	
-	return $result;
+	return $result_manual;
 }
 
 ##############################################################################
@@ -497,38 +451,90 @@ sub gepard_test_crypto {
 # These functions provide a pure Perl AES implementation as a fallback
 # when OpenKore's Rijndael is not available.
 
-sub _pure_perl_aes_encrypt {
-	my ($block, $key) = @_;
+sub _init_pure_perl_cipher {
+	my ($key) = @_;
 	
 	# Try to use Crypt::Cipher::AES if available
 	eval {
 		require Crypt::Cipher::AES;
+		$pure_perl_cipher = Crypt::Cipher::AES->new($key);
 	};
 	
-	unless ($@) {
-		my $cipher = Crypt::Cipher::AES->new($key);
-		return $cipher->encrypt($block);
+	if ($@) {
+		die "GepardCrypto: No AES implementation available. Please build XSTools or install Crypt::Cipher::AES\n";
 	}
 	
-	# If no crypto library is available, we cannot proceed
-	die "GepardCrypto: No AES implementation available. Please build XSTools or install Crypt::Cipher::AES\n";
+	return $pure_perl_cipher;
+}
+
+sub _pure_perl_aes_encrypt {
+	my ($block, $key) = @_;
+	
+	# Initialize cipher if not already done or if key changed
+	unless ($pure_perl_cipher) {
+		_init_pure_perl_cipher($key);
+	}
+	
+	# For single block encryption in ECB mode
+	return $pure_perl_cipher->encrypt($block);
 }
 
 sub _pure_perl_aes_decrypt {
 	my ($block, $key) = @_;
 	
-	# Try to use Crypt::Cipher::AES if available
-	eval {
-		require Crypt::Cipher::AES;
-	};
-	
-	unless ($@) {
-		my $cipher = Crypt::Cipher::AES->new($key);
-		return $cipher->decrypt($block);
+	# Initialize cipher if not already done or if key changed
+	unless ($pure_perl_cipher) {
+		_init_pure_perl_cipher($key);
 	}
 	
-	# If no crypto library is available, we cannot proceed
-	die "GepardCrypto: No AES implementation available. Please build XSTools or install Crypt::Cipher::AES\n";
+	# For single block decryption in ECB mode
+	return $pure_perl_cipher->decrypt($block);
+}
+
+# Alternative: use CBC mode directly for the whole encryption/decryption
+sub _cbc_encrypt_direct {
+	my ($plaintext, $key, $iv) = @_;
+	
+	eval {
+		require Crypt::Mode::CBC;
+	};
+	
+	if ($@) {
+		die "Crypt::Mode::CBC not available\n";
+	}
+	
+	my $cbc = Crypt::Mode::CBC->new('AES');
+	$iv ||= "\0" x 16;
+	
+	# Pad with zeros to block size
+	my $block_size = 16;
+	my $padding_needed = ($block_size - (length($plaintext) % $block_size)) % $block_size;
+	my $padded = $plaintext . ("\0" x $padding_needed) if $padding_needed;
+	$padded = $plaintext if !$padding_needed;
+	
+	return $cbc->encrypt($padded, $key, $iv);
+}
+
+sub _cbc_decrypt_direct {
+	my ($ciphertext, $key, $iv) = @_;
+	
+	eval {
+		require Crypt::Mode::CBC;
+	};
+	
+	if ($@) {
+		die "Crypt::Mode::CBC not available\n";
+	}
+	
+	my $cbc = Crypt::Mode::CBC->new('AES');
+	$iv ||= "\0" x 16;
+	
+	my $decrypted = $cbc->decrypt($ciphertext, $key, $iv);
+	
+	# Remove trailing zeros (zero padding)
+	$decrypted =~ s/\0+$//;
+	
+	return $decrypted;
 }
 
 ##############################################################################
