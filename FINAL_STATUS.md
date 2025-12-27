@@ -223,6 +223,4 @@ When tested on a local machine with proper network access to the game server, Op
 
 ---
 
-**Total commits:** 19 commits  
-**Lines of code:** ~15,000+ (implementation + documentation)  
 **Status:** Ready for deployment

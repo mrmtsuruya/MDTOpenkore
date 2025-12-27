@@ -74,7 +74,7 @@ sudo ufw allow out 6955/tcp
 
 #### D. Verify Configuration
 
-Check `/home/runner/work/MDTOpenkore/MDTOpenkore/openkore-master/tables/servers.txt`:
+Check `openkore-master/tables/servers.txt`:
 
 ```ini
 [Arkangel RO]
@@ -118,7 +118,7 @@ Some ISPs block common gaming ports. Solutions:
 ### Step 1: Verify OpenKore Builds Successfully
 
 ```bash
-cd /home/runner/work/MDTOpenkore/MDTOpenkore/openkore-master
+cd openkore-master
 make clean && make
 ```
 
@@ -127,7 +127,6 @@ Should end with: `scons: done building targets.`
 ### Step 2: Test Encryption Module
 
 ```bash
-cd /home/runner/work/MDTOpenkore/MDTOpenkore
 perl test_encryption.pl
 ```
 
@@ -236,7 +235,7 @@ Server configurations can change. Check these sources for updates:
 If network is fine but authentication fails:
 
 ```bash
-cd /home/runner/work/MDTOpenkore/MDTOpenkore/openkore-master/control
+cd openkore-master/control
 cp config.txt config.txt.backup
 
 # Edit config.txt and try backup keys one by one:

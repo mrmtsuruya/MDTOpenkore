@@ -12,10 +12,15 @@ my $server_ip = "104.234.180.123";
 my $server_port = 6955;
 my $timeout = 10;
 
+# Validate IP address format for security
+die "Invalid IP address format\n" unless $server_ip =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+die "Invalid port number\n" unless $server_port =~ /^\d+$/ && $server_port > 0 && $server_port < 65536;
+
 # Test 1: DNS Resolution
 print "[Test 1/5] DNS Resolution Test\n";
 print "-" x 70 . "\n";
 print "Resolving arkangelrosea.com...\n";
+# Using system() is safer but we need output, so using backticks with safe literal string
 my $dns_result = `host arkangelrosea.com 2>&1`;
 if ($dns_result =~ /has address/) {
     print "✓ DNS resolution: SUCCESS\n";
@@ -29,7 +34,8 @@ if ($dns_result =~ /has address/) {
 print "\n[Test 2/5] ICMP Ping Test\n";
 print "-" x 70 . "\n";
 print "Pinging $server_ip (4 packets)...\n";
-my $ping_result = `ping -c 4 -W 5 $server_ip 2>&1`;
+# IP is validated above, safe to use in command
+my $ping_result = `ping -c 4 -W 5 '$server_ip' 2>&1`;
 if ($ping_result =~ /(\d+) received/) {
     my $received = $1;
     if ($received > 0) {
@@ -85,9 +91,11 @@ if ($socket) {
 print "\n[Test 4/5] Advanced Port Scan\n";
 print "-" x 70 . "\n";
 my $nc_available = `which nc 2>&1`;
-if ($nc_available && $nc_available =~ /\/nc/) {
+chomp($nc_available);
+if ($nc_available && $nc_available =~ /\/nc$/) {
     print "Testing with netcat...\n";
-    my $nc_result = `timeout $timeout nc -zv $server_ip $server_port 2>&1`;
+    # IP and port validated above, safe to use
+    my $nc_result = `timeout $timeout nc -zv '$server_ip' '$server_port' 2>&1`;
     print "$nc_result\n";
     if ($nc_result =~ /succeeded|open/) {
         print "✓ Netcat test: Port is OPEN\n";
@@ -108,6 +116,7 @@ my $has_ufw = -x "/usr/sbin/ufw";
 
 if ($has_iptables) {
     print "iptables detected, checking OUTPUT rules...\n";
+    print "(Note: This requires sudo/root access)\n";
     my $ipt_result = `sudo iptables -L OUTPUT -n 2>&1 | head -20`;
     if ($ipt_result =~ /tcp dpt:$server_port.*DROP/) {
         print "✗ WARNING: iptables may be DROPPING connections to port $server_port\n";
@@ -120,6 +129,7 @@ if ($has_iptables) {
 
 if ($has_ufw) {
     print "\nUFW detected, checking status...\n";
+    print "(Note: This requires sudo/root access)\n";
     my $ufw_result = `sudo ufw status 2>&1`;
     print "$ufw_result\n";
 }
