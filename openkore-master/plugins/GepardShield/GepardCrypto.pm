@@ -202,8 +202,10 @@ sub _cbs_aes_decrypt {
 	}
 	
 	if ($data_len <= $block_size) {
-		# Single block - just decrypt normally
-		return _aes_decrypt_block($ciphertext, $key);
+		# Single block - use CBC mode with IV
+		my $iv_to_use = $iv || ("\0" x $block_size);
+		my $decrypted = _aes_decrypt_block($ciphertext, $key);
+		return _xor_blocks($decrypted, $iv_to_use);
 	}
 
 	# Split into blocks
@@ -251,8 +253,8 @@ sub _cbs_aes_decrypt {
 	# XOR with previous ciphertext
 	my $plaintext_last = _xor_blocks($decrypted_last, $prev_cipher);
 	
-	# The plaintext for second-to-last is XOR of decrypted_second_last with decrypted_last
-	my $plaintext_second_last = _xor_blocks($decrypted_second_last, $padded_last);
+	# The plaintext for second-to-last is XOR of decrypted_second_last with the original last ciphertext
+	my $plaintext_second_last = _xor_blocks($decrypted_second_last, $last . ("\0" x ($block_size - $last_block_size)));
 	
 	# Append results (only take the actual length of last block)
 	$result .= substr($plaintext_second_last, 0, $block_size);
@@ -273,8 +275,10 @@ sub _cbs_aes_encrypt {
 	}
 	
 	if ($data_len <= $block_size) {
-		# Single block - just encrypt normally  
-		return _aes_encrypt_block($plaintext, $key);
+		# Single block - use CBC mode with IV
+		my $iv_to_use = $iv || ("\0" x $block_size);
+		my $xored = _xor_blocks($plaintext, $iv_to_use);
+		return _aes_encrypt_block($xored, $key);
 	}
 
 	# Split into blocks
@@ -418,11 +422,15 @@ sub _validate_key_length {
 ##############################################################################
 
 sub gepard_test_crypto {
+	# WARNING: This test key is ONLY for self-testing and should NEVER be used
+	# for actual server authentication. Always use server-specific keys.
 	my $test_data = "Test plaintext 123";
-	my $test_key = pack("H*", "0123456789ABCDEF0123456789ABCDEF");  # 16 bytes for AES-128
+	my $test_key = pack("H*", "0123456789ABCDEF0123456789ABCDEF");  # TEST ONLY - 16 bytes for AES-128
 
-	print "GepardCrypto Self-Test\n";
+	print "GepardCrypto Self-Test (Using TEST KEY Only)\n";
 	print "=" x 60 . "\n";
+	print "WARNING: This test uses a hardcoded key for testing purposes only.\n";
+	print "=" x 60 . "\n\n";
 
 	# Test key setting
 	print "Setting test key... ";
