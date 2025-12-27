@@ -6,17 +6,20 @@
 server Arkangel RO
 
 # Login Credentials
-# Note: Fill in your actual credentials here
-username YOUR_USERNAME
-password YOUR_PASSWORD
+# Test account for Arkangel RO
+username Rakshot26
+password Akemi_2689
 
 # Character Selection
 # Specify character name or slot number (0, 1, 2)
-char YOUR_CHARACTER_NAME
+char 0
 
-# XKore Mode (required for Arkangel RO)
-# Mode 2: Inject into running RO client
-XKore 2
+# XKore Mode
+# Mode 0: No XKore (standalone bot)
+# Mode 1: Inject into running client
+# Mode 2: Inject into running client (alternative method)
+# Using mode 0 since we're on Linux without the client
+XKore 0
 
 ###########################################################################
 # Gepard Shield Configuration
@@ -29,8 +32,8 @@ gepard_enabled 1
 gepard_debug 1
 
 # Gepard encryption key (REQUIRED - must be obtained from server)
-# This is a placeholder - replace with actual key
-#gepard_key 0123456789ABCDEF0123456789ABCDEF
+# Using test key for initial connection attempt - will need actual key from gepard.dll
+gepard_key 0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF
 
 ###########################################################################
 # General Settings
