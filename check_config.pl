@@ -27,7 +27,7 @@ if (-f "$RealBin/openkore-master/control/config.txt") {
 }
 
 # Check 2: GepardShield plugin exists
-print "[2/7] Checking GepardShield plugin... ";
+print "[2/8] Checking GepardShield plugin... ";
 if (-f "$RealBin/openkore-master/plugins/GepardShield/GepardShield.pl" &&
     -f "$RealBin/openkore-master/plugins/GepardShield/GepardCrypto.pm") {
     print "✓ OK\n";
@@ -37,8 +37,31 @@ if (-f "$RealBin/openkore-master/plugins/GepardShield/GepardShield.pl" &&
     $all_ok = 0;
 }
 
+# Check 2b: Check for gepard.dll (optional but helpful)
+print "[2b/8] Checking for gepard.dll (optional)... ";
+my @dll_locations = (
+    "$RealBin/gepard.dll",
+    "$RealBin/ArkangelSEA/gepard.dll",
+    "$RealBin/openkore-master/gepard.dll",
+);
+my $dll_found = 0;
+foreach my $path (@dll_locations) {
+    if (-f $path) {
+        print "✓ FOUND\n";
+        print "      Location: $path\n";
+        print "      Run: perl extract_key.pl to extract the encryption key\n";
+        $dll_found = 1;
+        last;
+    }
+}
+unless ($dll_found) {
+    print "⚠ NOT FOUND\n";
+    print "      This is optional but helpful for key extraction\n";
+    print "      See KEY_EXTRACTION_GUIDE.md for details\n";
+}
+
 # Check 3: Read config file
-print "[3/7] Reading configuration... ";
+print "[3/8] Reading configuration... ";
 my %config;
 if (open my $fh, '<', "$RealBin/openkore-master/control/config.txt") {
     while (my $line = <$fh>) {
@@ -58,7 +81,7 @@ if (open my $fh, '<', "$RealBin/openkore-master/control/config.txt") {
 }
 
 # Check 4: Server configuration
-print "[4/7] Checking server selection... ";
+print "[4/8] Checking server selection... ";
 if ($config{server} && $config{server} =~ /Arkangel/i) {
     print "✓ OK (server: $config{server})\n";
 } else {
@@ -68,7 +91,7 @@ if ($config{server} && $config{server} =~ /Arkangel/i) {
 }
 
 # Check 5: Credentials
-print "[5/7] Checking credentials... ";
+print "[5/8] Checking credentials... ";
 my $creds_ok = 1;
 if (!$config{username} || $config{username} =~ /YOUR_USERNAME/) {
     print "\n      ⚠ username not configured\n";
@@ -93,7 +116,7 @@ if ($creds_ok) {
 }
 
 # Check 6: Gepard Shield configuration
-print "[6/7] Checking Gepard Shield config... ";
+print "[6/8] Checking Gepard Shield config... ";
 my $gepard_ok = 1;
 
 if (!$config{gepard_enabled} || $config{gepard_enabled} ne '1') {
@@ -120,7 +143,7 @@ if ($config{gepard_debug} && $config{gepard_debug} eq '1') {
 }
 
 # Check 7: Test encryption module
-print "[7/7] Testing encryption module... ";
+print "[7/8] Testing encryption module... ";
 my $test_result = `perl $RealBin/test_encryption.pl 2>&1`;
 if ($test_result =~ /All tests passed/) {
     print "✓ OK\n";
@@ -129,6 +152,19 @@ if ($test_result =~ /All tests passed/) {
     print "⚠ WARNING\n";
     print "      Encryption test had issues\n";
     print "      Run: perl test_encryption.pl for details\n";
+}
+
+# Check 8: Key extraction tool availability
+print "[8/8] Checking key extraction tool... ";
+if (-f "$RealBin/extract_key.pl") {
+    print "✓ OK\n";
+    print "      Tool available: extract_key.pl\n";
+    if ($dll_found) {
+        print "      ⭐ Ready to extract key! Run: perl extract_key.pl\n";
+    }
+} else {
+    print "⚠ NOT FOUND\n";
+    print "      extract_key.pl script missing\n";
 }
 
 # Summary
