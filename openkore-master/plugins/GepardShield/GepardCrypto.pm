@@ -250,10 +250,13 @@ sub _cbs_aes_decrypt {
 	# Decrypt the padded last block
 	my $decrypted_last = _aes_decrypt_block($padded_last, $key);
 	
-	# XOR with previous ciphertext
+	# XOR with previous ciphertext (CBC mode)
 	my $plaintext_last = _xor_blocks($decrypted_last, $prev_cipher);
 	
-	# The plaintext for second-to-last is XOR of decrypted_second_last with the original last ciphertext
+	# In CBS mode, the plaintext for second-to-last block is obtained by XORing
+	# the decrypted second-to-last block with the original last ciphertext block (padded).
+	# This is the "stealing" part - we use ciphertext from the last block to complete
+	# the decryption of the second-to-last block.
 	my $plaintext_second_last = _xor_blocks($decrypted_second_last, $last . ("\0" x ($block_size - $last_block_size)));
 	
 	# Append results (only take the actual length of last block)
@@ -348,12 +351,15 @@ sub _aes_encrypt_block {
 	}
 
 	# Use Rijndael if available
+	# Note: $key parameter is not used here because Rijndael was already initialized
+	# with the key in gepard_init_crypto(). The key parameter is kept for API
+	# consistency with the fallback implementation.
 	if ($use_rijndael && $rijndael) {
 		return $rijndael->Encrypt($block, undef, $block_size, 0);
 	}
 	
-	# Otherwise use pure Perl AES
-	return _pure_perl_aes_encrypt($block, $encryption_key);
+	# Otherwise use pure Perl AES with the passed key
+	return _pure_perl_aes_encrypt($block, $key);
 }
 
 sub _aes_decrypt_block {
@@ -368,12 +374,15 @@ sub _aes_decrypt_block {
 	}
 
 	# Use Rijndael if available
+	# Note: $key parameter is not used here because Rijndael was already initialized
+	# with the key in gepard_init_crypto(). The key parameter is kept for API
+	# consistency with the fallback implementation.
 	if ($use_rijndael && $rijndael) {
 		return $rijndael->Decrypt($block, undef, $block_size, 0);
 	}
 	
-	# Otherwise use pure Perl AES
-	return _pure_perl_aes_decrypt($block, $encryption_key);
+	# Otherwise use pure Perl AES with the passed key
+	return _pure_perl_aes_decrypt($block, $key);
 }
 
 sub _xor_blocks {
