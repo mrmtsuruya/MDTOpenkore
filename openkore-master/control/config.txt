@@ -32,8 +32,8 @@ gepard_enabled 1
 gepard_debug 1
 
 # Gepard encryption key (REQUIRED - must be obtained from server)
-# Using test key for initial connection attempt - will need actual key from gepard.dll
-gepard_key 0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF
+# Extracted from gepard.dll - top candidate from entropy analysis
+gepard_key d150f7d25803840452acdc9423ca66c1
 
 ###########################################################################
 # General Settings
