@@ -301,4 +301,5 @@ if (!$opt_test_only && !$opt_challenge && !$opt_response) {
 }
 
 print "\nDone.\n";
-HELP
+
+exit 0;
