@@ -1,1 +1,4 @@
-XKore 3
+XKore 2
+char
+server
+macro_orphans terminate

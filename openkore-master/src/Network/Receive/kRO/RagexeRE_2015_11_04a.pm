@@ -19,7 +19,15 @@ use base qw(Network::Receive::kRO::RagexeRE_2015_10_29a);
 
 sub new {
 	my ($class) = @_;
-	return $class->SUPER::new(@_);
+	my $self = $class->SUPER::new(@_);
+
+	my %packets = (
+		'4753' => ['account_server_intro', 'v a32', [qw(len data)]],
+	);
+
+	$self->{packet_list}{$_} = $packets{$_} for keys %packets;
+
+	return $self;
 }
 
 
