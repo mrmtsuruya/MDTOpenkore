@@ -1,0 +1,22 @@
+loadConfig({
+  "post_url": "https://www.ruijienetworks.com",
+  "oneclick": {
+    "oneclick_validity": "0",
+    "oneclick_qos": {
+      "up_rate": "0",
+      "down_rate": "0"
+    },
+    "oneclick_times": "0"
+  },
+  "custom_html": {
+    "login_options": [
+      "voucher",
+      "fixaccount",
+      "pass"
+    ],
+    "lang": [
+      "en_US",
+      "es_ES"
+    ]
+  }
+});

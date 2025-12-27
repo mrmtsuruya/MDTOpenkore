@@ -1,0 +1,98 @@
+-- Prepared By: Denz Skyzone
+-- Visit: https://skyzone.host
+-- If you want to encrypt this Lua Contact Us We will make it for your Server.
+-- We make unencrypted this file we know you will copy this for your self.
+main = function()
+	iiFiles = { 
+		"System/arkangel/iteminfo.lub",
+		"System/arkangel/Weapon.lub",
+		"System/arkangel/Headgear.lub",
+		"System/arkangel/Costume.lub",
+	}
+
+	_TempItems = {}
+	_Num = 0
+
+	function add_sz_id(item_id)
+		local ID = "Item ID: <URL>[" .. tostring(item_id) .. "]<INFO>https://ratemyserver.net/index.php?iname=" .. tostring(item_id) .. "&page=item_db&quick=1&isearch=Search</INFO></URL>"
+		return ID
+	end
+
+	function add_sz_spacer()
+		local T = "**************************"
+		return T
+	end
+	
+	function add_sz_web()
+		local M = "[^a80000 Arkangel Ragnarok Sea ^000000]"
+		return M
+	end
+	 
+	function CheckItem(ItemID, DESC)
+		if not (_TempItems[ItemID]) then
+			_TempItems[ItemID] = DESC
+			_Num = _Num + 1
+		else
+			myTbl = {}
+			for pos,val in pairs(_TempItems[ItemID]) do
+				myTbl[pos] = val
+			end
+
+			for pos,val in pairs(DESC) do
+				if not (myTbl[pos]) or myTbl[pos] == "" then
+					myTbl[pos] = val
+				end
+
+			end
+
+			_TempItems[ItemID] = myTbl
+		end
+
+	end 
+ 
+	for i,iiFile in pairs(iiFiles) do
+		d = dofile(iiFile)
+	end 
+ 
+	for ItemID,DESC in pairs(_TempItems) do
+ 		result, msg = AddItem(ItemID, DESC.unidentifiedDisplayName, DESC.unidentifiedResourceName, DESC.identifiedDisplayName, DESC.identifiedResourceName, DESC.slotCount, DESC.ClassNum)
+		if not result then
+			return false, msg
+		end
+		for k,v in pairs(DESC.unidentifiedDescriptionName) do
+			result, msg = AddItemUnidentifiedDesc(ItemID, v)
+			if not result then
+				return false, msg
+			end
+		end
+		AddItemIdentifiedDesc(ItemID,add_sz_web(ItemID))
+		AddItemIdentifiedDesc(ItemID, add_sz_spacer(ItemID))
+		if nil ~= DESC.EffectID then
+			result, msg = AddItemEffectInfo(ItemID, DESC.EffectID)
+		end
+		if not result == true then
+			return false, msg
+		end
+		for k,v in pairs(DESC.identifiedDescriptionName) do
+			result, msg = AddItemIdentifiedDesc(ItemID, v)
+			if not result then
+				return false, msg
+			end
+		end
+		AddItemIdentifiedDesc(ItemID, add_sz_spacer(ItemID))
+		AddItemIdentifiedDesc(ItemID, add_sz_id(ItemID))
+		if nil ~= DESC.costume then
+			result, msg = AddItemIsCostume(ItemID, DESC.costume)
+		end
+		if not result == true then
+			return false, msg
+		end
+	end
+
+	_TempItems = nil
+
+    return true, "good"
+end
+
+
+

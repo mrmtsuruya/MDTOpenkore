@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <title></title>
+    <meta name="viewport" content="initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Cache" content="no-cache" />
+
+    <link rel="icon" href="./img/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="./css/index.css" />
+  </head>
+
+  <body cz-shortcut-listen="true">
+    <div class="body-loading" id="body_loading">
+      <img src="./img/loading.gif" style="width: 320px; height: 240px" />
+    </div>
+
+    <div class="body-wrapper">
+      <div class="body-background">
+        <div class="body-background-mask"></div>
+      </div>
+
+      <div class="body-content-wrapper">
+        <div class="body-content" id="body_content">
+          <div class="content-decoration-wrapper">
+            <!--logo-->
+            <div class="content-logo-wrapper">
+              <img class="content-logo" src="./img/logo.png" />
+            </div>
+          </div>
+
+          <div class="login-wrapper">
+            <div class="login-form-wrapper">
+              <div>
+                <div class="login-form-title">
+                </div>
+              </div>
+
+              <div class="login-item login-item-fixaccount hide">
+                <input
+                  class="rj-input"
+                  type="text"
+                  id="account_input"
+                  data-i18n-placeholder="account"
+                />
+              </div>
+              <div class="login-item login-item-fixaccount hide">
+                <input
+                  class="rj-input"
+                  type="password"
+                  id="account_password"
+                  data-i18n-placeholder="password"
+                />
+              </div>
+              <div class="login-item login-item-voucher hide">
+                <input
+                  class="rj-input"
+                  type="text"
+                  id="voucher_code"
+                  data-i18n-placeholder="accesscode"
+                />
+              </div>
+            </div>
+
+            <div class="login-msg" id="login_msg"></div>
+            <button
+              class="rj-btn rj-btn-primary login-btn"
+              id="login_btn"
+              data-i18n="login"
+            >
+            </button>
+
+            <div class="other-btn-wrapper">
+              <div class="login-split-line hide" id="login_split_line">
+                <span class="left"></span>
+                <span data-i18n="or">
+                </span>
+                <span class="right"></span>
+              </div>
+              <button
+                class="rj-btn login-item login-item-pass hide"
+                onclick="IndexObj.changeLoginOption('pass')"
+                data-i18n="one_click_login"
+              >
+              </button>
+              <button
+                class="rj-btn login-item login-item-fixaccount hide"
+                onclick="IndexObj.changeLoginOption('fixaccount')"
+                data-i18n="account_login"
+              >
+              </button>
+              <button
+                class="rj-btn login-item login-item-voucher hide"
+                onclick="IndexObj.changeLoginOption('voucher')"
+                data-i18n="voucher_login"
+              >
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="./js/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/language.js"></script>
+    <script type="text/javascript" src="./js/i18n/i18n.js"></script>
+    <script type="text/javascript" src="./js/index.js"></script>
+    <script type="text/javascript" src="./loadConfig.json"></script>
+
+    <script type="text/javascript">
+    </script>
+  </body>
+</html>

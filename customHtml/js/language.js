@@ -1,0 +1,28 @@
+const LandObj = {
+  en_US: {
+    please_enter_account: "Please enter a username. ",
+    please_enter_pwd: "Please enter a password.",
+    please_enter_access_code: "Please enter an access code.",
+    login: "Login",
+    accesscode: "Access Code",
+    password: "Password",
+    account: "Account",
+    or: "or",
+    one_click_login: "One-click Login",
+    account_login: "Account Login",
+    voucher_login: "Voucher Login",
+  },
+  es_ES: {
+    please_enter_account: "Introduzca el nombre de usuario.",
+    please_enter_pwd: "Introduzca la contraseña.",
+    please_enter_access_code: "por favor ingrese el código de verificación.",
+    login: "Iniciar sesión",
+    accesscode: "Código de acceso",
+    password: "Contraseña",
+    account: "Cuenta",
+    or: "o",
+    one_click_login: "Un solo clic",
+    account_login: "Cuenta",
+    voucher_login: "Gutschein-Anmeldung",
+  },
+};
