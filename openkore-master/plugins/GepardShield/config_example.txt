@@ -1,0 +1,77 @@
+#############################################################################
+# GepardShield Plugin Configuration Example
+#
+# Copy these settings to your main control/config.txt file
+#############################################################################
+
+# Enable Gepard Shield authentication
+# Set to 1 to enable, 0 to disable
+gepard_enabled 1
+
+# Path to Gepard DLL (optional)
+# If not specified, will attempt auto-detection
+# Supports both absolute and relative paths
+#gepard_dll_path gepard.dll
+#gepard_dll_path C:/OpenKore/gepard/gepard.dll
+#gepard_dll_path /home/user/openkore/gepard/libgepard.so
+
+# Enable debug logging for Gepard Shield
+# Set to 1 for verbose logging (helpful for troubleshooting)
+# Set to 0 for normal operation
+gepard_debug 1
+
+# Gepard encryption key (if required by your implementation)
+# This should be obtained from your server or through authorized means
+#gepard_key YOUR_ENCRYPTION_KEY_HERE
+
+# Gepard protocol version (if applicable)
+# Some servers may use different protocol versions
+#gepard_protocol_version 1
+
+#############################################################################
+# Advanced Settings
+#############################################################################
+
+# Maximum number of authentication retries
+#gepard_max_retries 3
+
+# Timeout for challenge response (in seconds)
+#gepard_response_timeout 10
+
+# Enable fallback mode if Gepard authentication fails
+# 0 = Disconnect on failure
+# 1 = Attempt to continue without Gepard (may not work)
+#gepard_fallback_mode 0
+
+#############################################################################
+# Example Configuration for Arkangel RO
+#############################################################################
+
+# For Arkangel RO server, use these settings:
+server Arkangel RO
+gepard_enabled 1
+gepard_debug 1
+XKore 2
+
+# Your login credentials
+username YOUR_USERNAME
+password YOUR_PASSWORD
+char YOUR_CHARACTER_NAME
+
+#############################################################################
+# Notes
+#############################################################################
+
+# 1. The GepardShield plugin will automatically activate for servers
+#    that use Gepard Shield anti-cheat (like Arkangel RO)
+#
+# 2. CBS-AES encryption implementation is required for authentication
+#    to succeed. See GEPARD_SHIELD_README.md for details.
+#
+# 3. Debug mode will log all challenge/response data in hex format,
+#    which can be useful for reverse engineering or troubleshooting.
+#
+# 4. Never share your encryption keys or challenge/response data
+#    publicly, as this may violate server terms of service.
+#
+#############################################################################
