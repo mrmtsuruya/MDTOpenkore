@@ -24,6 +24,11 @@ use Network::Send ();
 use Log qw(message warning error debug);
 use Utils qw(timeOut);
 
+# Load GepardCrypto module
+use FindBin qw($RealBin);
+use lib "$RealBin/plugins/GepardShield";
+use GepardCrypto;
+
 # Plugin information
 Plugins::register("GepardShield", "Gepard Shield anti-cheat authentication handler v1.0", \&unload);
 
@@ -247,16 +252,34 @@ sub validateChallenge {
 sub initializeEncryption {
 	debug "[GepardShield] Initializing encryption subsystem...\n", "plugins";
 
-	# TODO: Initialize CBS-AES encryption
-	# This would load encryption keys, initialize cipher contexts, etc.
-
-	# Check for external DLL if configured
-	if ($config{gepard_dll_path}) {
-		loadGepardDLL($config{gepard_dll_path});
+	# Initialize GepardCrypto module
+	if ($config{gepard_key}) {
+		my $key;
+		# Check if key is hex string
+		if ($config{gepard_key} =~ /^[0-9a-fA-F]+$/) {
+			$key = pack("H*", $config{gepard_key});
+		} else {
+			$key = $config{gepard_key};
+		}
+		
+		GepardCrypto::gepard_set_key($key);
+		
+		my $result = GepardCrypto::gepard_init_crypto();
+		
+		if ($result) {
+			message "[GepardShield] Encryption initialized successfully\n", "success";
+			message "[GepardShield] Using " . (length($key) * 8) . "-bit key\n", "plugins";
+			return 1;
+		} else {
+			error "[GepardShield] Failed to initialize encryption!\n";
+			return 0;
+		}
+	} else {
+		warning "[GepardShield] WARNING: No encryption key configured!\n";
+		warning "[GepardShield] Set 'gepard_key' in config.txt to enable authentication.\n";
+		warning "[GepardShield] Authentication will fail without a valid key.\n";
+		return 0;
 	}
-
-	warning "[GepardShield] WARNING: Encryption subsystem not implemented!\n";
-	warning "[GepardShield] CBS-AES encryption must be implemented for authentication to work.\n";
 }
 
 sub loadGepardDLL {
@@ -274,17 +297,22 @@ sub loadGepardDLL {
 sub decryptChallenge {
 	my ($challenge) = @_;
 
-	debug "[GepardShield] Decrypting challenge with CBS-AES...\n", "connection";
+	debug "[GepardShield] Decrypting challenge with CBC-AES...\n", "connection";
 
-	# TODO: Implement CBS-AES decryption
-	# Algorithm:
-	# 1. Initialize AES cipher with Gepard key
-	# 2. Set up CBS (Cipher Block Stealing) mode
-	# 3. Decrypt the challenge data
-	# 4. Verify integrity (checksum/MAC)
-
-	# For now, return undef to indicate not implemented
-	warning "[GepardShield] CBS-AES decryption not implemented!\n";
+	# Use GepardCrypto to decrypt
+	my $decrypted = GepardCrypto::gepard_decrypt_challenge($challenge);
+	
+	if ($decrypted) {
+		if ($config{gepard_debug}) {
+			debug "[GepardShield] Challenge decrypted successfully (" . length($decrypted) . " bytes)\n", "connection";
+			debug "[GepardShield] Decrypted hex: " . unpack("H*", $decrypted) . "\n", "connection";
+		}
+		return $decrypted;
+	} else {
+		error "[GepardShield] Failed to decrypt challenge!\n";
+		return undef;
+	}
+}
 	return undef;
 
 	# Expected implementation would look like:
@@ -320,18 +348,21 @@ sub processGepardProtocol {
 sub encryptResponse {
 	my ($response_data) = @_;
 
-	debug "[GepardShield] Encrypting response with CBS-AES...\n", "connection";
+	debug "[GepardShield] Encrypting response with CBC-AES...\n", "connection";
 
-	# TODO: Implement CBS-AES encryption
-	# Mirror of decryption process but in reverse
-
-	warning "[GepardShield] CBS-AES encryption not implemented!\n";
-	return undef;
-
-	# Expected implementation:
-	# my $key = getGepardKey();
-	# my $encrypted = CBS_AES_Encrypt($response_data, $key);
-	# return $encrypted;
+	# Use GepardCrypto to encrypt
+	my $encrypted = GepardCrypto::gepard_encrypt_response($response_data);
+	
+	if ($encrypted) {
+		if ($config{gepard_debug}) {
+			debug "[GepardShield] Response encrypted successfully (" . length($encrypted) . " bytes)\n", "connection";
+			debug "[GepardShield] Encrypted hex: " . unpack("H*", $encrypted) . "\n", "connection";
+		}
+		return $encrypted;
+	} else {
+		error "[GepardShield] Failed to encrypt response!\n";
+		return undef;
+	}
 }
 
 ##############################################################################
