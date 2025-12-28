@@ -309,7 +309,8 @@ sub _aes_encrypt_block {
 	# with the key in gepard_init_crypto(). The key parameter is kept for API
 	# consistency with the fallback implementation.
 	if ($use_rijndael && $rijndael) {
-		return $rijndael->Encrypt($block, undef, $block_size, 0);
+		my $result = '';  # Rijndael expects a result buffer parameter (not used but required)
+		return $rijndael->Encrypt($block, $result, $block_size, 0);
 	}
 	
 	# Otherwise use pure Perl AES with the passed key
@@ -332,7 +333,8 @@ sub _aes_decrypt_block {
 	# with the key in gepard_init_crypto(). The key parameter is kept for API
 	# consistency with the fallback implementation.
 	if ($use_rijndael && $rijndael) {
-		return $rijndael->Decrypt($block, undef, $block_size, 0);
+		my $result = '';  # Rijndael expects a result buffer parameter (not used but required)
+		return $rijndael->Decrypt($block, $result, $block_size, 0);
 	}
 	
 	# Otherwise use pure Perl AES with the passed key
