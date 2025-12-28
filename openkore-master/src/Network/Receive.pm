@@ -1175,7 +1175,13 @@ sub account_server_intro {
 	# The GepardShield plugin will handle this if enabled
 	# If the plugin is not loaded or configured, authentication will fail
 	
-	debug "Gepard Shield challenge received, waiting for plugin to process...\n", "connection";
+	debug "Gepard Shield challenge received, calling plugin hook...\n", "connection";
+	
+	# Call plugin hook to allow GepardShield plugin to process the challenge
+	Plugins::callHook('packet/account_server_intro', {
+		data => $args->{data},
+		len => $args->{len}
+	});
 }
 
 sub account_server_info {
