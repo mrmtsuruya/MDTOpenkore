@@ -1172,17 +1172,16 @@ sub account_server_intro {
 	debug sprintf("Server intro data: %s\n", unpack("H*", $args->{data})), "connection";
 
 	# This packet is used by Gepard Shield anti-cheat protection
-	# The server sends a challenge that requires cryptographic response
-	# Users must provide their own Gepard Shield DLL implementation
-	# Configure gepard_enabled and gepard_dll in config.txt if available
-
-	if ($config{gepard_enabled}) {
-		warning "Gepard Shield is enabled but DLL integration is not implemented.\n";
-		warning "You need to provide your own Gepard Shield DLL to authenticate.\n";
-		warning "See GEPARD_DLL_README.md for implementation details.\n";
-	}
-
-	debug "Waiting for server login response (Gepard DLL not configured)...\n", "connection";
+	# The GepardShield plugin will handle this if enabled
+	# If the plugin is not loaded or configured, authentication will fail
+	
+	debug "Gepard Shield challenge received, calling plugin hook...\n", "connection";
+	
+	# Call plugin hook to allow GepardShield plugin to process the challenge
+	Plugins::callHook('packet/account_server_intro', {
+		data => $args->{data},
+		len => $args->{len}
+	});
 }
 
 sub account_server_info {

@@ -1,0 +1,5 @@
+# OpenKore Plugins Configuration
+# List plugins to load on startup
+
+# Gepard Shield authentication plugin (required for Arkangel RO)
+GepardShield
